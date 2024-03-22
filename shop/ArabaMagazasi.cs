@@ -1,4 +1,3 @@
-
 using UnityEngine;
 using System.Collections.Generic;
 using Newtonsoft.Json;
@@ -47,10 +46,14 @@ public class ArabaMagazasi : MonoBehaviour
                 aracVerisi.arabaPrefab = arabaPrefab; // arabaPrefab özelliğini ayarla
 
 
-                if (aracVerisi.isown)
-                    arabalar.Insert(0, arabaPrefab); 
-                else
+                if (aracVerisi.isown){
                     arabalar.Add(arabaPrefab);
+                     //  arabalar.Insert(0, arabaPrefab); 
+                }
+                 
+                else{arabalar.Add(arabaPrefab);
+                }
+                    
             }
         }
 
@@ -91,35 +94,40 @@ public class ArabaMagazasi : MonoBehaviour
     }
 
 
-    public void ResetAllIsOwn()
+    void resetdata(){
+        Resources.UnloadUnusedAssets();
+        ArabaPrefabListesiniDoldur();
+        ShowCar(0); 
+    }
+
+
+   public void ResetAllIsOwn()
+{
+    for (int i = 0; i < arabalar.Count; i++)
     {
-        // Loop through all AracVerisi objects
-        foreach (GameObject arabaPrefab in arabalar)
+        GameObject arabaPrefab = arabalar[i];
+        TextAsset jsonVeri = Resources.Load<TextAsset>($"Vehicles/{arabaPrefab.name}");
+        if (jsonVeri != null)
         {
-            TextAsset jsonVeri = Resources.Load<TextAsset>($"Vehicles/{arabaPrefab.name}");
-            if (jsonVeri != null)
-            {
-                AracVerisi aracVerisi = JsonConvert.DeserializeObject<AracVerisi>(jsonVeri.text);
+            AracVerisi aracVerisi = JsonConvert.DeserializeObject<AracVerisi>(jsonVeri.text);
 
-                // Set all isown to false except for the first car (index 0)
-                aracVerisi.isown = arabaPrefab.name.Equals(arabalar[0].name);
+            // Set all isown to false except for the first car (index 0)
+            aracVerisi.isown = (i == 0);
 
-                // Write the updated data back to the JSON file
-                string jsonData = JsonConvert.SerializeObject(aracVerisi);
-                File.WriteAllText($"Assets/Resources/Vehicles/{arabaPrefab.name}.json", jsonData);
-            }
-        }
-
-        // Update the in-memory list of car data (optional)
-        for (int i = 0; i < arabalar.Count; i++)
-        {
-            TextAsset jsonVeri = Resources.Load<TextAsset>($"Vehicles/{arabalar[i].name}");
-            if (jsonVeri != null)
-            {
-                arabalar[i].GetComponent<AracVerisi>().isown = arabalar[i].name.Equals(arabalar[0].name); // Assuming AracVerisi component exists on each prefab
-            }
+            // Write the updated data back to the JSON file
+            string jsonData = JsonConvert.SerializeObject(aracVerisi);
+            File.WriteAllText($"Assets/Resources/Vehicles/{arabaPrefab.name}.json", jsonData);
         }
     }
+
+    // Update the in-memory list of car data
+    arabalar.Clear(); // arabalar listesini temizle
+    ArabaPrefabListesiniDoldur(); // yeniden arabaları yükle
+    ShowCar(0); // ilk arabayı göster
+    UpdateButtonAndText(); // buton ve metinleri güncelle
+    SceneManager.LoadScene(1);
+}
+
 
     public void buttonclick()
     {
@@ -198,8 +206,9 @@ public class ArabaMagazasi : MonoBehaviour
    
     
 
-    private class AracVerisi
-    {
+    private class AracVerisi {
+        
+    
         public string aracAdi;
         public bool isActive;
         public bool isown;
@@ -208,3 +217,4 @@ public class ArabaMagazasi : MonoBehaviour
         public string aracid;
 
     }
+}

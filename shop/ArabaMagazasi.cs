@@ -35,6 +35,8 @@ public class ArabaMagazasi : MonoBehaviour
 
     void ArabaPrefabListesiniDoldur()
     {
+        arabalar.Clear(); // Önce arabalar listesini temizle
+
         GameObject[] arabalarArray = Resources.LoadAll<GameObject>("Vehicles");
 
         foreach (GameObject arabaPrefab in arabalarArray)
@@ -117,15 +119,18 @@ public class ArabaMagazasi : MonoBehaviour
             // Write the updated data back to the JSON file
             string jsonData = JsonConvert.SerializeObject(aracVerisi);
             File.WriteAllText($"Assets/Resources/Vehicles/{arabaPrefab.name}.json", jsonData);
+             UpdateButtonAndText(); // Buton ve metinleri güncelle
         }
     }
-
+   
+ AracVerisi aracverisi1 = GetSelectedCarData();
+Debug.LogWarning(aracverisi1.isown);
     // Update the in-memory list of car data
     arabalar.Clear(); // arabalar listesini temizle
     ArabaPrefabListesiniDoldur(); // yeniden arabaları yükle
     ShowCar(0); // ilk arabayı göster
     UpdateButtonAndText(); // buton ve metinleri güncelle
-    SceneManager.LoadScene(1);
+    //SceneManager.LoadScene(1);
 }
 
 
@@ -160,6 +165,8 @@ public class ArabaMagazasi : MonoBehaviour
 
 
                 PlayerPrefs.Save();
+                  Debug.LogWarning(aracVerisi.isown);
+                   UpdateButtonAndText(); // Buton ve metinleri güncelle
             }
             else
             {
@@ -187,6 +194,8 @@ public class ArabaMagazasi : MonoBehaviour
                 buttontext.GetComponent<TextMeshProUGUI>().color = buyrenk;
                 buttontext.GetComponent<TextMeshProUGUI>().text = "BUY(" + aracVerisi.coin + ")";
             }
+                 LayoutRebuilder.ForceRebuildLayoutImmediate(button.GetComponent<RectTransform>());
+   
         }
     }
 

@@ -10,6 +10,9 @@ public class ArabaMagazasi : MonoBehaviour
 {
     private List<GameObject> arabalar = new List<GameObject>();
 
+    public List<bool> aracSahiplikDurumu = new List<bool>(); // Araçların sahiplik durumunu tutacak liste
+
+
     private int currentCarIndex = 0;
 
     public TextMeshProUGUI aracAdiText;
@@ -46,18 +49,20 @@ public class ArabaMagazasi : MonoBehaviour
             {
                 AracVerisi aracVerisi = JsonConvert.DeserializeObject<AracVerisi>(jsonVeri.text);
                 aracVerisi.arabaPrefab = arabaPrefab; // arabaPrefab özelliğini ayarla
+                aracSahiplikDurumu.Add(aracVerisi.isown); // Sahiplik durumu listesine ekle
+        
 
 
                 if (aracVerisi.isown){
                     arabalar.Add(arabaPrefab);
                      //  arabalar.Insert(0, arabaPrefab); 
+                     
 
                 }
                  
                 else{arabalar.Add(arabaPrefab);
                 }
 
-Aracverisi.isown2= a3acverisi.isown;
                     
             }
         }
@@ -112,6 +117,10 @@ Aracverisi.isown2= a3acverisi.isown;
     {
         GameObject arabaPrefab = arabalar[i];
         TextAsset jsonVeri = Resources.Load<TextAsset>($"Vehicles/{arabaPrefab.name}");
+
+        // Tüm araçların sahiplik durumunu sıfırla
+        aracSahiplikDurumu[i] = (i == 0);
+
         if (jsonVeri != null)
         {
             AracVerisi aracVerisi = JsonConvert.DeserializeObject<AracVerisi>(jsonVeri.text);
@@ -122,30 +131,30 @@ Aracverisi.isown2= a3acverisi.isown;
             // Write the updated data back to the JSON file
             string jsonData = JsonConvert.SerializeObject(aracVerisi);
             File.WriteAllText($"Assets/Resources/Vehicles/{arabaPrefab.name}.json", jsonData);
-             UpdateButtonAndText(); // Buton ve metinleri güncelle
         }
     }
-   
- AracVerisi aracverisi1 = GetSelectedCarData();
-Debug.LogWarning(aracverisi1.isown);
+
     // Update the in-memory list of car data
     arabalar.Clear(); // arabalar listesini temizle
+    aracSahiplikDurumu.Clear(); // aracSahiplikDurumu listesini temizle
     ArabaPrefabListesiniDoldur(); // yeniden arabaları yükle
     ShowCar(0); // ilk arabayı göster
     UpdateButtonAndText(); // buton ve metinleri güncelle
-    //SceneManager.LoadScene(1);
 }
 
 
-    public void buttonclick()
-    {
-      AracVerisi aracVerisi = GetSelectedCarData();
+
+   public void buttonclick()
+{
+    AracVerisi aracVerisi = GetSelectedCarData();
     if (aracVerisi != null)
     {
-        if (aracVerisi.isown2)
+        int index = currentCarIndex; // Şu anki aracın indeksini al
+
+        if (aracSahiplikDurumu[index]) // Eğer araç sahiplik durumu true ise
         {
             //PlayerPrefs.SetString("currentvehicle", aracVerisi.arabaPrefab.name);
-           PlayerPrefs.SetString("currentvehicle", aracVerisi.aracid);
+            PlayerPrefs.SetString("currentvehicle", aracVerisi.aracid);
             Debug.LogWarning("KAYDEDİLDİ");
         }
         else
@@ -153,56 +162,56 @@ Debug.LogWarning(aracverisi1.isown);
             int storedCoin = PlayerPrefs.GetInt("Coin", 0); // PlayerPrefs'ten mevcut coin miktarını al
             if (storedCoin >= aracVerisi.coin)
             {
-                Debug.LogWarning(aracVerisi.isown);
+                aracSahiplikDurumu[index] = true; // Araç sahiplik durumunu true olarak güncelle
                 aracVerisi.isown = true;
 
-aracVerisi.isown2 = true;
                 // Aracı satın al ve Coin miktarını güncelle
                 PlayerPrefs.SetString("currentvehicle", aracVerisi.aracAdi);
                 PlayerPrefs.SetInt("Coin", storedCoin - aracVerisi.coin);
                 //aracverisi
                 Debug.LogWarning("satıldı");
-                 
+
                 string jsonData = JsonConvert.SerializeObject(aracVerisi);
                 File.WriteAllText($"Assets/Resources/Vehicles/{arabalar[currentCarIndex].name}.json", jsonData);
 
-                
-
-
                 PlayerPrefs.Save();
-                  Debug.LogWarning(aracVerisi.isown);
-                   UpdateButtonAndText(); // Buton ve metinleri güncelle
+                Debug.LogWarning(aracVerisi.isown);
+                UpdateButtonAndText(); // Buton ve metinleri güncelle
             }
             else
             {
                 // Yeterli coin yoksa bir şey yapma
-                Debug.LogWarning("Yetersiz coin, araç satın alınamadı."+storedCoin);
+                Debug.LogWarning("Yetersiz coin, araç satın alınamadı." + storedCoin);
             }
         }
         UpdateButtonAndText(); // Buton ve metinleri güncelle
-    }}
+    }
+}
+
 
     void UpdateButtonAndText()
+{
+    AracVerisi aracVerisi = GetSelectedCarData();
+    if (aracVerisi != null)
     {
-        AracVerisi aracVerisi = GetSelectedCarData();
-        if (aracVerisi != null)
+        int index = currentCarIndex; // Şu anki aracın indeksini al
+
+        if (aracSahiplikDurumu[index]) // Eğer araç sahiplik durumu true ise
         {
-            if (aracVerisi.isown2)
-            {
-                button.GetComponent<Image>().color = buyrenk;
-                buttontext.GetComponent<TextMeshProUGUI>().color = userenk;
-                buttontext.GetComponent<TextMeshProUGUI>().text = "USE";
-            }
-            else
-            {
-                button.GetComponent<Image>().color = userenk;
-                buttontext.GetComponent<TextMeshProUGUI>().color = buyrenk;
-                buttontext.GetComponent<TextMeshProUGUI>().text = "BUY(" + aracVerisi.coin + ")";
-            }
-                 LayoutRebuilder.ForceRebuildLayoutImmediate(button.GetComponent<RectTransform>());
-   
+            button.GetComponent<Image>().color = buyrenk;
+            buttontext.GetComponent<TextMeshProUGUI>().color = userenk;
+            buttontext.GetComponent<TextMeshProUGUI>().text = "USE";
         }
+        else
+        {
+            button.GetComponent<Image>().color = userenk;
+            buttontext.GetComponent<TextMeshProUGUI>().color = buyrenk;
+            buttontext.GetComponent<TextMeshProUGUI>().text = "BUY(" + aracVerisi.coin + ")";
+        }
+        LayoutRebuilder.ForceRebuildLayoutImmediate(button.GetComponent<RectTransform>());
     }
+}
+
 
     AracVerisi GetSelectedCarData()
     {
@@ -226,7 +235,7 @@ aracVerisi.isown2 = true;
         public string aracAdi;
         public bool isActive;
         public bool isown;
-Public bool isown2;
+
         public int coin;
         public GameObject arabaPrefab; // Aracın prefabını tutacak özellik
         public string aracid;

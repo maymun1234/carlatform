@@ -16,6 +16,8 @@ public class ArabaMagazasi : MonoBehaviour
     private int currentCarIndex = 0;
 
     public TextMeshProUGUI aracAdiText;
+    public TextMeshProUGUI engineText;
+    public TextMeshProUGUI coinText;
     public GameObject button;
     public GameObject buttontext;
 
@@ -100,6 +102,12 @@ public class ArabaMagazasi : MonoBehaviour
         {
             AracVerisi aracVerisi = JsonConvert.DeserializeObject<AracVerisi>(jsonVeri.text);
             aracAdiText.text = aracVerisi.aracAdi;
+
+            engineText.text = aracVerisi.enginepower;
+
+            coinText.text = aracVerisi.coinperhit.ToString;
+
+
         }
     }
 
@@ -156,6 +164,8 @@ public class ArabaMagazasi : MonoBehaviour
             //PlayerPrefs.SetString("currentvehicle", aracVerisi.arabaPrefab.name);
             PlayerPrefs.SetString("currentvehicle", aracVerisi.aracid);
             Debug.LogWarning("KAYDEDİLDİ");
+            Debug.LogWarning(aracVerisi.aracAdi);
+             SceneManager.LoadScene(0);
         }
         else
         {
@@ -239,6 +249,8 @@ public class ArabaMagazasi : MonoBehaviour
         public int coin;
         public GameObject arabaPrefab; // Aracın prefabını tutacak özellik
         public string aracid;
+        public string enginepower;
+        public int coinperhit;
 
     }
 }
